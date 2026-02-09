@@ -1117,7 +1117,34 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 80mm;
+                width: 58mm;  /* Optimal untuk printer 58mm */
+                font-size: 10px;  /* Font lebih kecil untuk 58mm */
+                padding: 5mm 3mm;  /* Padding lebih kecil */
+                line-height: 1.4;  /* Line spacing yang pas */
+            }
+            /* Judul toko */
+            .receipt h2, .receipt h3 {
+                font-size: 13px;
+                margin: 3px 0;
+            }
+            /* Separator */
+            .receipt hr {
+                margin: 5px 0;
+            }
+            /* Tabel items */
+            .receipt table {
+                font-size: 9px;
+                width: 100%;
+            }
+            /* Total section - lebih besar & bold */
+            .receipt .total-section {
+                font-size: 11px;
+                font-weight: bold;
+            }
+            /* Footer kecil */
+            .receipt .footer {
+                font-size: 8px;
+                margin-top: 5px;
             }
             .no-print {
                 display: none !important;
@@ -1259,6 +1286,10 @@
                     <span>Subtotal</span>
                     <span class="summary-value" id="subtotal">Rp 0</span>
                 </div>
+                <div class="summary-row" id="discountDisplay" style="display:none;color:var(--danger)">
+                    <span>Diskon Total</span>
+                    <span class="summary-value" id="discountAmount">Rp 0</span>
+                </div>
                 <div class="summary-row" id="taxRow">
                     <span>Pajak (10%)</span>
                     <span class="summary-value" id="tax">Rp 0</span>
@@ -1266,6 +1297,14 @@
                 <div class="summary-row summary-total">
                     <span>Total</span>
                     <span class="summary-value" id="total">Rp 0</span>
+                </div>
+            </div>
+            
+            <!-- Input Diskon Tambahan -->
+            <div class="payment-section" style="padding:12px;border-bottom:1px solid #ddd">
+                <div class="payment-input">
+                    <label>💸 Diskon Tambahan (Rp)</label>
+                    <input type="number" id="additionalDiscount" placeholder="0" oninput="updateSummary();calculateChange()">
                 </div>
             </div>
 
@@ -1619,6 +1658,55 @@
         <div class="modal-footer no-print">
             <button class="btn" style="background:var(--primary);color:white" onclick="window.print()">🖨️ Print Struk</button>
             <button class="btn" style="background:var(--gray);color:white" onclick="closeReceiptModal()">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Diskon Item -->
+<div class="modal" id="discountModal">
+    <div class="modal-content" style="max-width:450px">
+        <div class="modal-header">
+            <h2 class="modal-title">💸 Diskon Item</h2>
+            <button class="modal-close" onclick="closeDiscountModal()">×</button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="discountItemInfo" style="padding:16px;background:#f8f9fa;border-radius:8px;margin-bottom:20px">
+                <!-- Item info will be injected -->
+            </div>
+            
+            <div class="form-group">
+                <label>Pilih Jenis Diskon</label>
+                <div style="display:flex;gap:12px;margin-top:8px">
+                    <button class="btn" id="discountTypeNominal" onclick="setDiscountType('nominal')" style="flex:1;background:var(--primary);color:white">Rupiah (Rp)</button>
+                    <button class="btn" id="discountTypePercent" onclick="setDiscountType('percent')" style="flex:1;background:var(--gray);color:white">Persen (%)</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label id="discountInputLabel">Nilai Diskon (Rp)</label>
+                <input type="number" id="discountValue" class="form-control" placeholder="0" min="0" style="font-size:18px;text-align:center">
+            </div>
+            
+            <div id="discountPreview" style="padding:16px;background:#e8f5e9;border-radius:8px;margin-top:16px;display:none">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                    <span>Harga Asli:</span>
+                    <span id="originalPrice" style="font-weight:600"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                    <span style="color:var(--danger)">Diskon:</span>
+                    <span id="discountPreviewAmount" style="color:var(--danger);font-weight:600"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:2px solid #4caf50">
+                    <span style="font-weight:bold">Harga Setelah Diskon:</span>
+                    <span id="finalPrice" style="font-weight:bold;color:var(--success);font-size:20px"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn" style="background:var(--success);color:white" onclick="applyDiscount()">✓ Terapkan Diskon</button>
+            <button class="btn" style="background:var(--gray);color:white" onclick="closeDiscountModal()">Batal</button>
         </div>
     </div>
 </div>
@@ -2029,19 +2117,26 @@ function renderCart() {
             breakdown += `${pricing.retailRemainder} eceran`;
         }
         
+        // Format diskon jika ada
+        const discountInfo = item.discount > 0 ? `<div style="color:#dc3545;font-size:12px">Diskon: -${formatCurrency(item.discount)}</div>` : '';
+        const finalPrice = pricing.total - (item.discount || 0);
+        
         return `
         <div class="cart-item">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-price">
                     ${item.quantity} ${item.unit} ${breakdown ? `(${breakdown})` : ''} = ${formatCurrency(pricing.total)}
+                    ${discountInfo}
+                    ${item.discount > 0 ? `<div style="font-weight:bold;color:var(--success)">Total: ${formatCurrency(finalPrice)}</div>` : ''}
                 </div>
             </div>
             <div class="cart-item-controls">
-                <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
+                <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)" title="Kurangi">−</button>
                 <span class="qty-display">${item.quantity}</span>
-                <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
-                <button class="remove-btn" onclick="removeFromCart(${item.id})">×</button>
+                <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)" title="Tambah">+</button>
+                <button class="qty-btn" onclick="showDiscountModal(${item.id})" title="Diskon" style="background:var(--accent);color:#333">%</button>
+                <button class="remove-btn" onclick="removeFromCart(${item.id})" title="Hapus">×</button>
             </div>
         </div>
     `}).join('');
@@ -2052,10 +2147,32 @@ function updateSummary() {
         return sum + calculatePrice(item, item.quantity).total;
     }, 0);
     
-    const tax = taxEnabled ? subtotal * 0.1 : 0;
-    const total = subtotal + tax;
+    // Hitung total diskon item
+    const itemDiscount = cart.reduce((sum, item) => {
+        return sum + (item.discount || 0);
+    }, 0);
+    
+    // Diskon total tambahan (jika ada)
+    const additionalDiscount = parseFloat(document.getElementById('additionalDiscount')?.value) || 0;
+    const totalDiscount = itemDiscount + additionalDiscount;
+    
+    const afterDiscount = subtotal - totalDiscount;
+    const tax = taxEnabled ? afterDiscount * 0.1 : 0;
+    const total = afterDiscount + tax;
     
     document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+    
+    // Update display diskon
+    const discountDisplay = document.getElementById('discountDisplay');
+    if (totalDiscount > 0) {
+        if (discountDisplay) {
+            discountDisplay.style.display = 'flex';
+            document.getElementById('discountAmount').textContent = formatCurrency(totalDiscount);
+        }
+    } else {
+        if (discountDisplay) discountDisplay.style.display = 'none';
+    }
+    
     document.getElementById('tax').textContent = formatCurrency(tax);
     document.getElementById('total').textContent = formatCurrency(total);
 }
@@ -2066,15 +2183,26 @@ function clearCart() {
     }
     cart = [];
     document.getElementById('paymentAmount').value = '';
+    document.getElementById('additionalDiscount').value = '';
     document.getElementById('changeDisplay').style.display = 'none';
     renderCart();
     updateSummary();
 }
 
 function calculateChange() {
-    const total = cart.reduce((sum, item) => {
+    const subtotal = cart.reduce((sum, item) => {
         return sum + calculatePrice(item, item.quantity).total;
-    }, 0) * (taxEnabled ? 1.1 : 1);
+    }, 0);
+    
+    const itemDiscount = cart.reduce((sum, item) => {
+        return sum + (item.discount || 0);
+    }, 0);
+    
+    const additionalDiscount = parseFloat(document.getElementById('additionalDiscount')?.value) || 0;
+    const totalDiscount = itemDiscount + additionalDiscount;
+    
+    const afterDiscount = subtotal - totalDiscount;
+    const total = afterDiscount * (taxEnabled ? 1.1 : 1);
     
     const payment = parseFloat(document.getElementById('paymentAmount').value) || 0;
     const change = payment - total;
@@ -2106,12 +2234,21 @@ function checkout() {
         return sum + calculatePrice(item, item.quantity).total;
     }, 0);
     
-    const tax = taxEnabled ? subtotal * 0.1 : 0;
-    const total = subtotal + tax;
+    // Hitung total diskon
+    const itemDiscount = cart.reduce((sum, item) => {
+        return sum + (item.discount || 0);
+    }, 0);
+    
+    const additionalDiscount = parseFloat(document.getElementById('additionalDiscount').value) || 0;
+    const totalDiscount = itemDiscount + additionalDiscount;
+    
+    const afterDiscount = subtotal - totalDiscount;
+    const tax = taxEnabled ? afterDiscount * 0.1 : 0;
+    const total = afterDiscount + tax;
     const payment = parseFloat(document.getElementById('paymentAmount').value) || 0;
     
     if (payment < total) {
-        alert('Jumlah pembayaran kurang!');
+        alert('Jumlah pembayaran kurang! Total: ' + formatCurrency(total));
         return;
     }
     
@@ -2125,6 +2262,7 @@ function checkout() {
             pricing: calculatePrice(item, item.quantity)
         })),
         subtotal: subtotal,
+        discount: totalDiscount,  // Simpan total diskon
         tax: tax,
         total: total,
         payment: payment,
@@ -2149,6 +2287,7 @@ function checkout() {
     // Clear cart
     cart = [];
     document.getElementById('paymentAmount').value = '';
+    document.getElementById('additionalDiscount').value = '';
     document.getElementById('changeDisplay').style.display = 'none';
     renderCart();
     updateSummary();
@@ -2160,34 +2299,34 @@ function showReceipt(transaction) {
     
     // Generate receipt HTML
     receipt.innerHTML = `
-        <div style="text-align:center;padding:20px;font-family:monospace;font-size:13px;line-height:1.6">
-            <div style="font-size:24px;margin-bottom:8px">${storeSettings.logo}</div>
-            <div style="font-size:16px;font-weight:bold;margin-bottom:4px">${storeSettings.name}</div>
-            <div style="font-size:11px;color:#666;margin-bottom:16px">
+        <div style="text-align:center;padding:10px 5px;font-family:monospace;font-size:11px;line-height:1.5;max-width:58mm">
+            <div style="font-size:20px;margin-bottom:5px">${storeSettings.logo}</div>
+            <div style="font-size:14px;font-weight:bold;margin-bottom:3px">${storeSettings.name}</div>
+            <div style="font-size:9px;color:#666;margin-bottom:10px;line-height:1.3">
                 ${storeSettings.address}<br>
-                Telp: ${storeSettings.phone}<br>
-                Email: ${storeSettings.email}
+                Telp: ${storeSettings.phone}
             </div>
             
-            <div style="border-top:2px dashed #000;border-bottom:2px dashed #000;padding:12px 0;margin:16px 0">
-                <div style="display:flex;justify-content:space-between;font-size:11px">
-                    <span>${new Date(transaction.date).toLocaleDateString('id-ID')}</span>
-                    <span>${new Date(transaction.date).toLocaleTimeString('id-ID')}</span>
+            <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:8px 0;margin:10px 0">
+                <div style="display:flex;justify-content:space-between;font-size:9px">
+                    <span>${new Date(transaction.date).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: '2-digit'})}</span>
+                    <span>${new Date(transaction.date).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}</span>
                 </div>
-                <div style="font-size:11px;margin-top:4px">
-                    No: <strong>${transaction.id}</strong> | Kasir: ${transaction.cashier}
+                <div style="font-size:9px;margin-top:3px">
+                    No: <strong>#${String(transaction.id).padStart(4, '0')}</strong> | ${transaction.cashier}
                 </div>
             </div>
             
-            <div style="text-align:left;margin:16px 0">
+            <div style="text-align:left;margin:10px 0">
                 ${transaction.items.map(item => {
                     const pricing = item.pricing;
+                    // Potong nama produk jika terlalu panjang untuk 58mm
+                    const shortName = item.name.length > 25 ? item.name.substring(0, 25) + '...' : item.name;
                     let itemHtml = `
-                        <div style="margin-bottom:12px">
-                            <div style="font-weight:bold">${item.name}</div>
-                            ${item.sku ? `<div style="font-size:9px;color:#888;font-family:monospace">Barcode: ${item.sku}</div>` : ''}
-                            <div style="display:flex;justify-content:space-between;font-size:12px">
-                                <span>${item.quantity} ${item.unit}</span>
+                        <div style="margin-bottom:8px;font-size:10px">
+                            <div style="font-weight:bold">${shortName}</div>
+                            <div style="display:flex;justify-content:space-between;margin-top:2px">
+                                <span>${item.quantity} ${item.unit} x ${formatCurrency(item.quantity > 1 ? (pricing.total / item.quantity) : item.price)}</span>
                                 <span><strong>${formatCurrency(pricing.total)}</strong></span>
                             </div>
                     `;
@@ -2195,18 +2334,27 @@ function showReceipt(transaction) {
                     if (pricing.wholesaleBatches > 0 || pricing.retailRemainder > 0) {
                         if (pricing.wholesaleBatches > 0) {
                             itemHtml += `
-                                <div style="font-size:10px;color:#666;margin-left:10px">
-                                    ${pricing.wholesaleBatches}×${item.minWholesale} @${formatCurrency(item.priceWholesale)}/${item.unit} = ${formatCurrency(pricing.wholesale)}
+                                <div style="font-size:8px;color:#666;margin-left:5px">
+                                    Grosir: ${pricing.wholesaleBatches}x${item.minWholesale}${item.unit} @${formatCurrency(item.priceWholesale)}
                                 </div>
                             `;
                         }
                         if (pricing.retailRemainder > 0) {
                             itemHtml += `
-                                <div style="font-size:10px;color:#666;margin-left:10px">
-                                    ${pricing.retailRemainder} @${formatCurrency(item.price)}/${item.unit} = ${formatCurrency(pricing.retail)}
+                                <div style="font-size:8px;color:#666;margin-left:5px">
+                                    Eceran: ${pricing.retailRemainder}${item.unit} @${formatCurrency(item.price)}
                                 </div>
                             `;
                         }
+                    }
+                    
+                    // Tampilkan diskon item jika ada
+                    if (item.discount && item.discount > 0) {
+                        itemHtml += `
+                            <div style="font-size:8px;color:#dc3545;margin-left:5px">
+                                Diskon: -${formatCurrency(item.discount)}
+                            </div>
+                        `;
                     }
                     
                     itemHtml += `</div>`;
@@ -2214,40 +2362,46 @@ function showReceipt(transaction) {
                 }).join('')}
             </div>
             
-            <div style="border-top:1px dashed #000;padding-top:12px;margin-top:16px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <div style="border-top:1px dashed #000;padding-top:8px;margin-top:10px;font-size:10px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px">
                     <span>Subtotal:</span>
                     <span>${formatCurrency(transaction.subtotal)}</span>
                 </div>
+                ${transaction.discount > 0 ? `
+                    <div style="display:flex;justify-content:space-between;margin-bottom:5px;color:#dc3545">
+                        <span>Diskon Total:</span>
+                        <span>-${formatCurrency(transaction.discount)}</span>
+                    </div>
+                ` : ''}
                 ${transaction.tax > 0 ? `
-                    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-                        <span>Pajak (10%):</span>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                        <span>Pajak:</span>
                         <span>${formatCurrency(transaction.tax)}</span>
                     </div>
                 ` : ''}
             </div>
             
-            <div style="border-top:2px solid #000;border-bottom:2px solid #000;padding:12px 0;margin:16px 0">
-                <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:bold">
+            <div style="border-top:2px solid #000;border-bottom:2px solid #000;padding:8px 0;margin:10px 0" class="total-section">
+                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:bold">
                     <span>TOTAL:</span>
                     <span>${formatCurrency(transaction.total)}</span>
                 </div>
             </div>
             
-            <div style="margin:16px 0">
-                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <div style="margin:10px 0;font-size:11px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px">
                     <span>Bayar:</span>
-                    <span>${formatCurrency(transaction.payment)}</span>
+                    <span><strong>${formatCurrency(transaction.payment)}</strong></span>
                 </div>
-                <div style="display:flex;justify-content:space-between;font-weight:bold;color:var(--success)">
-                    <span>Kembalian:</span>
+                <div style="display:flex;justify-content:space-between;font-weight:bold">
+                    <span>Kembali:</span>
                     <span>${formatCurrency(transaction.change)}</span>
                 </div>
             </div>
             
-            <div style="border-top:2px dashed #000;padding-top:16px;margin-top:16px;font-size:12px">
-                <div style="margin-bottom:12px">${storeSettings.footer}</div>
-                <div style="font-weight:bold">Terima Kasih!</div>
+            <div style="border-top:1px dashed #000;padding-top:10px;margin-top:10px;font-size:8px;line-height:1.4" class="footer">
+                <div style="margin-bottom:5px">${storeSettings.footer || 'Terima kasih atas kunjungan Anda'}</div>
+                <div style="font-weight:bold;font-size:9px">~ Terima Kasih ~</div>
             </div>
         </div>
     `;
@@ -2257,6 +2411,153 @@ function showReceipt(transaction) {
 
 function closeReceiptModal() {
     document.getElementById('receiptModal').classList.remove('active');
+}
+
+// =================================================================
+// MODAL: DISKON ITEM
+// =================================================================
+
+let discountItemId = null;
+let discountType = 'nominal'; // 'nominal' or 'percent'
+
+function showDiscountModal(itemId) {
+    discountItemId = itemId;
+    const item = cart.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const pricing = calculatePrice(item, item.quantity);
+    const originalPrice = pricing.total;
+    
+    // Set info item
+    document.getElementById('discountItemInfo').innerHTML = `
+        <div style="font-weight:600;margin-bottom:8px">${item.name}</div>
+        <div style="color:#666">Qty: ${item.quantity} ${item.unit}</div>
+        <div style="color:#666">Harga: ${formatCurrency(originalPrice)}</div>
+        ${item.discount > 0 ? `<div style="color:var(--danger);margin-top:4px">Diskon saat ini: ${formatCurrency(item.discount)}</div>` : ''}
+    `;
+    
+    // Reset form
+    discountType = 'nominal';
+    document.getElementById('discountValue').value = item.discount || '';
+    setDiscountType('nominal');
+    
+    // Show modal
+    document.getElementById('discountModal').classList.add('active');
+    
+    // Update preview
+    if (item.discount > 0) {
+        updateDiscountPreview(item);
+    }
+}
+
+function closeDiscountModal() {
+    document.getElementById('discountModal').classList.remove('active');
+    document.getElementById('discountPreview').style.display = 'none';
+    discountItemId = null;
+}
+
+function setDiscountType(type) {
+    discountType = type;
+    
+    const nominalBtn = document.getElementById('discountTypeNominal');
+    const percentBtn = document.getElementById('discountTypePercent');
+    const label = document.getElementById('discountInputLabel');
+    
+    if (type === 'nominal') {
+        nominalBtn.style.background = 'var(--primary)';
+        percentBtn.style.background = 'var(--gray)';
+        label.textContent = 'Nilai Diskon (Rp)';
+    } else {
+        nominalBtn.style.background = 'var(--gray)';
+        percentBtn.style.background = 'var(--primary)';
+        label.textContent = 'Persentase Diskon (%)';
+    }
+    
+    // Update preview
+    const item = cart.find(i => i.id === discountItemId);
+    if (item) updateDiscountPreview(item);
+}
+
+function updateDiscountPreview(item) {
+    const pricing = calculatePrice(item, item.quantity);
+    const originalPrice = pricing.total;
+    const discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+    
+    let discountAmount = 0;
+    if (discountType === 'nominal') {
+        discountAmount = discountValue;
+    } else {
+        discountAmount = (originalPrice * discountValue) / 100;
+    }
+    
+    // Validasi: diskon tidak boleh lebih dari harga
+    if (discountAmount > originalPrice) {
+        discountAmount = originalPrice;
+    }
+    
+    const finalPrice = originalPrice - discountAmount;
+    
+    // Update preview
+    document.getElementById('originalPrice').textContent = formatCurrency(originalPrice);
+    document.getElementById('discountPreviewAmount').textContent = formatCurrency(discountAmount);
+    document.getElementById('finalPrice').textContent = formatCurrency(finalPrice);
+    document.getElementById('discountPreview').style.display = 'block';
+}
+
+// Event listener untuk input diskon
+document.addEventListener('DOMContentLoaded', function() {
+    const discountInput = document.getElementById('discountValue');
+    if (discountInput) {
+        discountInput.addEventListener('input', function() {
+            const item = cart.find(i => i.id === discountItemId);
+            if (item) updateDiscountPreview(item);
+        });
+    }
+});
+
+function applyDiscount() {
+    const item = cart.find(i => i.id === discountItemId);
+    if (!item) return;
+    
+    const pricing = calculatePrice(item, item.quantity);
+    const originalPrice = pricing.total;
+    const discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+    
+    let discountAmount = 0;
+    if (discountType === 'nominal') {
+        discountAmount = discountValue;
+    } else {
+        discountAmount = (originalPrice * discountValue) / 100;
+    }
+    
+    // Validasi
+    if (discountAmount > originalPrice) {
+        alert('Diskon tidak boleh lebih dari harga produk!');
+        return;
+    }
+    
+    if (discountAmount < 0) {
+        alert('Diskon tidak boleh negatif!');
+        return;
+    }
+    
+    // Set diskon ke item
+    item.discount = discountAmount;
+    
+    // Update tampilan
+    renderCart();
+    updateSummary();
+    calculateChange();
+    
+    // Close modal
+    closeDiscountModal();
+    
+    // Notifikasi
+    if (discountAmount > 0) {
+        alert(`✓ Diskon ${formatCurrency(discountAmount)} diterapkan untuk ${item.name}`);
+    } else {
+        alert('Diskon dihapus');
+    }
 }
 
 // =================================================================
