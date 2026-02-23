@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>POS Kasir - Toko Rukun</title>
     <meta name="theme-color" content="#FF6B35">
     <meta name="mobile-web-app-capable" content="yes">
@@ -10,9 +10,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="POS Kasir">
 
-    <!-- Force Landscape -->
+    <!-- Force Landscape - Optimized for Huawei MatePad 11.5 -->
     <style>
-        /* Paksa landscape via CSS rotation jika device portrait */
+        /* Optimasi untuk MatePad 11.5 (2800x1840 / 7:5 ratio) */
         @media screen and (orientation: portrait) {
             html {
                 transform: rotate(90deg);
@@ -23,6 +23,16 @@
                 position: absolute;
                 top: 100%;
                 left: 0;
+                /* Smooth scrolling untuk MatePad */
+                -webkit-overflow-scrolling: touch;
+                scroll-behavior: smooth;
+            }
+            body {
+                width: 100vh;
+                height: 100vw;
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
         }
         @media screen and (orientation: landscape) {
@@ -31,6 +41,13 @@
                 width: 100%;
                 height: 100%;
                 position: static;
+                -webkit-overflow-scrolling: touch;
+                scroll-behavior: smooth;
+            }
+            body {
+                width: 100%;
+                height: 100%;
+                -webkit-overflow-scrolling: touch;
             }
         }
     </style>
@@ -76,15 +93,67 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
             color: var(--dark);
             /* Block pull-to-refresh di Android/Huawei */
             overscroll-behavior-y: none;
             overscroll-behavior: none;
+            /* FIXED BODY - tidak bisa scroll */
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            /* Smooth scrolling optimization untuk MatePad */
+            -webkit-overflow-scrolling: touch;
+            /* Hardware acceleration */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            /* No padding - handled by container */
+            box-sizing: border-box;
         }
         html {
             overscroll-behavior-y: none;
             overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
+            /* FIXED HTML - tidak bisa scroll */
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            /* Hardware acceleration */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        /* Smooth scroll untuk semua scrollable containers */
+        .modal-body,
+        .menu-item,
+        .cart-items,
+        .transaction-list,
+        .product-list {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        
+        /* ====================================
+           OPTIMASI KHUSUS HUAWEI MATEPAD 11.5
+           Rasio 7:5 (2800x1840) - landscape
+           ==================================== */
+        @media screen and (min-width: 1800px) and (orientation: landscape) {
+            /* MatePad 11.5 landscape mode */
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 kolom untuk layar lebar */
+            }
+            .header {
+                padding: 24px 40px;
+            }
+        }
+        
+        @media screen and (max-width: 1840px) and (min-width: 1024px) and (orientation: landscape) {
+            /* Fine-tune untuk MatePad di landscape */
+            body {
+                padding: 16px;
+            }
         }
 
         /* LOGIN SCREEN */
@@ -212,7 +281,8 @@
         .main-app {
             touch-action: pan-y;   /* biarkan scroll vertikal, block gestures browser */
             display: none;
-            padding: 20px;
+            height: 100%;
+            width: 100%;
         }
 
         .main-app.active {
@@ -220,11 +290,17 @@
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            margin: 0;
             display: grid;
-            grid-template-columns: 1fr 400px;
+            grid-template-columns: 1fr 480px;
+            grid-template-rows: auto 1fr;
             gap: 20px;
+            /* Optimasi untuk MatePad landscape */
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 20px;
         }
 
         .header {
@@ -236,6 +312,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            /* Static header di grid row pertama */
+            flex-shrink: 0;
         }
 
         .logo {
@@ -332,6 +410,13 @@
             padding: 20px;
             border-radius: 16px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            /* Fixed layout - full height dengan scroll internal */
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+            isolation: isolate;
         }
 
         .section-header {
@@ -341,6 +426,7 @@
             margin-bottom: 16px;
             gap: 12px;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .section-title {
@@ -412,6 +498,7 @@
             gap: 6px;
             margin-bottom: 16px;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .category-btn {
@@ -435,8 +522,39 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
-            max-height: calc(100vh - 350px);
+            flex: 1;
+            min-height: 0;
             overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 20px;
+            /* Smooth scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            will-change: scroll-position;
+            touch-action: pan-y;
+            /* Isolate scroll - prevent propagation to body */
+            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
+            /* Visible scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        .products-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .products-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .products-grid::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        .products-grid::-webkit-scrollbar-thumb:hover {
+            background: #999;
         }
 
         /* ─── PRODUCT CARD ─────────────────────────────── */
@@ -451,13 +569,21 @@
             display: flex;
             flex-direction: column;
             gap: 0;
+            min-height: 360px;
+            /* Touch optimization */
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .product-card:hover {
             border-color: var(--primary);
             transform: translateY(-3px);
             box-shadow: 0 8px 24px rgba(255,107,53,0.18);
         }
-        .product-card:active { transform: scale(0.97); }
+        .product-card:active { 
+            transform: scale(0.97);
+            transition: all 0.1s;
+        }
 
         /* SKU badge — pojok kanan atas */
         .product-sku {
@@ -608,17 +734,21 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.12);
             display: flex;
             flex-direction: column;
-            max-height: calc(100vh - 120px);
+            height: 100%;
+            min-height: 0;
             position: relative;
             overflow: hidden;
+            isolation: isolate;
+            z-index: 10;
         }
 
         .cart-header {
-            padding: 20px;
+            padding: 16px 20px;
             border-bottom: 2px solid #F8F9FA;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .tax-toggle {
@@ -674,9 +804,38 @@
 
         .cart-items {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 12px 20px;
-            max-height: 280px;
+            /* Smooth scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            will-change: scroll-position;
+            touch-action: pan-y;
+            /* Isolate scroll - prevent propagation to body */
+            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
+            /* Visible scrollbar untuk debugging */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        .cart-items::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .cart-items::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .cart-items::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        .cart-items::-webkit-scrollbar-thumb:hover {
+            background: #999;
         }
 
         .cart-item {
@@ -686,6 +845,7 @@
             background: #F8F9FA;
             border-radius: 8px;
             margin-bottom: 10px;
+            position: relative;
         }
 
         .cart-item-info {
@@ -730,6 +890,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
 
         .discount-btn:hover {
@@ -752,6 +913,7 @@
             font-size: 14px;
             font-weight: 600;
             color: var(--primary);
+            touch-action: manipulation;
         }
 
         .qty-btn:hover {
@@ -768,14 +930,29 @@
         }
 
         .remove-btn {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             border: none;
             background: var(--danger);
             color: white;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(239,71,111,0.4);
+            transition: background 0.15s, transform 0.1s;
+        }
+        .remove-btn:hover {
+            background: #d63060;
+        }
+        .remove-btn:active {
+            transform: scale(0.92);
         }
 
         .cart-empty {
@@ -785,15 +962,16 @@
         }
 
         .cart-summary {
-            padding: 16px 20px;
+            padding: 10px 20px;
             border-top: 2px solid #F8F9FA;
+            flex-shrink: 0;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 13px;
+            margin-bottom: 6px;
+            font-size: 12px;
         }
 
         .summary-value {
@@ -802,35 +980,36 @@
         }
 
         .summary-total {
-            padding-top: 10px;
+            padding-top: 6px;
             border-top: 2px dashed #E9ECEF;
-            margin-top: 8px;
+            margin-top: 4px;
         }
 
         .summary-total .summary-value {
-            font-size: 18px;
+            font-size: 16px;
             color: var(--primary);
         }
 
         .payment-section {
-            padding: 16px 20px;
+            padding: 12px 20px;
             background: #F8F9FA;
+            flex-shrink: 0;
         }
 
         /* Input Diskon — kecil, subtle */
         .payment-input label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--gray);
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .payment-input input {
             width: 100%;
-            padding: 9px 12px;
+            padding: 8px 12px;
             border: 2px solid #E9ECEF;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
             margin-bottom: 0;
@@ -845,19 +1024,19 @@
         /* Input Jumlah Bayar — BESAR & menonjol */
         .payment-input-main label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .payment-input-main input {
             width: 100%;
-            padding: 18px 20px;
+            padding: 14px 16px;
             border: 3px solid var(--primary);
-            border-radius: 14px;
-            font-size: 28px;
+            border-radius: 12px;
+            font-size: 24px;
             font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
             margin-bottom: 0;
@@ -874,25 +1053,25 @@
         }
         .payment-input-main input::placeholder {
             color: #ccc;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .change-display {
-            padding: 14px;
+            padding: 10px;
             background: white;
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             border: 2px dashed var(--success);
         }
 
         .change-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--gray);
         }
 
         .change-amount {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--success);
             font-family: 'JetBrains Mono', monospace;
@@ -901,7 +1080,8 @@
         .action-buttons {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
         .action-buttons-row {
@@ -960,7 +1140,36 @@
         /* 5. Tab form boleh scroll sendiri */
         #productsModal #productFormTab {
             overflow-y: auto;
+            overflow-x: hidden;
             padding-bottom: 20px;
+            /* Smooth scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            will-change: scroll-position;
+            touch-action: pan-y;
+            /* Isolate scroll - prevent propagation to body */
+            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
+            /* Visible scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        #productsModal #productFormTab::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #productsModal #productFormTab::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #productsModal #productFormTab::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        #productsModal #productFormTab::-webkit-scrollbar-thumb:hover {
+            background: #999;
         }
 
         /* 6. Search bar: tidak ikut scroll */
@@ -1031,11 +1240,40 @@
             border-radius: 12px;
             border: 1px solid #E9ECEF;
             margin-bottom: 8px;
+            /* Smooth scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            will-change: scroll-position;
+            touch-action: pan-y pan-x;
+            /* Isolate scroll - prevent propagation to body */
+            overscroll-behavior: contain;
+            /* Visible scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        #productsModal .table-wrapper::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        #productsModal .table-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #productsModal .table-wrapper::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        #productsModal .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #999;
         }
 
         /* 8. thead sticky: bekerja karena scroll ada di .table-wrapper */
         #productsModal .data-table {
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             border-radius: 0;
         }
         #productsModal .data-table thead th {
@@ -1049,8 +1287,12 @@
             white-space: nowrap;
             padding: 14px 12px;
             border-bottom: 3px solid var(--primary);
+            /* Pastikan sticky bekerja di Android WebView */
+            will-change: transform;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
         }
-        #productsModal .data-table td        { font-size: 14px; padding: 13px 12px; }
+        #productsModal .data-table td        { font-size: 14px; padding: 10px 10px; }
         #productsModal .data-table tbody tr:hover { background: #FFF5F0; cursor: pointer; }
         .pf-section {
             background: #F8F9FA;
@@ -1132,7 +1374,7 @@
         }
         .recheck-toggle-btn {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             background: linear-gradient(135deg, var(--secondary), #003A6B);
             color: white;
             border: none;
@@ -1140,7 +1382,7 @@
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1206,7 +1448,16 @@
         .recheck-items {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 12px 14px;
+            /* Smooth scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            will-change: scroll-position;
+            touch-action: pan-y;
+            /* Isolate scroll - prevent propagation */
+            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
         }
         .recheck-item {
             display: flex;
@@ -1272,6 +1523,9 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            /* Touch optimization */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(255, 107, 53, 0.2);
         }
 
         .btn-clear {
@@ -1290,8 +1544,12 @@
             background: var(--success);
             color: white;
             width: 100%;
-            padding: 16px;
-            font-size: 16px;
+            padding: 12px;
+            font-size: 15px;
+            position: relative;
+            z-index: 1;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
         }
 
         .btn-checkout:hover {
@@ -1363,7 +1621,35 @@
         .modal-body {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px 28px;
+            /* Smooth scroll optimization */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            touch-action: pan-y;
+            /* Isolate scroll - prevent propagation */
+            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
+            /* Visible scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .modal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #999;
         }
 
         .modal-footer {
@@ -1730,6 +2016,7 @@
             border-radius: 14px;
             padding: 12px 16px 4px;
             margin-bottom: 16px;
+            flex-shrink: 0;
         }
         .mode-toggle-label {
             font-size: 13px;
@@ -1966,24 +2253,24 @@
             </div>
             
             <!-- Input Diskon Tambahan — kecil, subtle -->
-            <div class="payment-section" style="padding:10px 20px 12px;border-bottom:1px solid #E9ECEF;background:#fff;">
+            <div class="payment-section" style="padding:8px 20px;border-bottom:1px solid #E9ECEF;background:#fff;">
                 <div class="payment-input">
                     <label>💸 Diskon Tambahan (Rp)</label>
-                    <input type="number" id="additionalDiscount" placeholder="0"
-                        oninput="updateSummary();calculateChange()">
+                    <input type="text" id="additionalDiscount" placeholder="Rp 0"
+                        oninput="formatCurrencyInput(this);updateSummary();calculateChange()">
                 </div>
             </div>
 
             <!-- Input Jumlah Bayar — BESAR & menonjol -->
-            <div class="payment-section" style="padding:16px 20px 14px;background:#FFF8F5;border-bottom:2px solid #FFD9CC;">
+            <div class="payment-section" style="padding:10px 20px;background:#FFF8F5;border-bottom:2px solid #FFD9CC;">
                 <div class="payment-input-main">
                     <label>💰 Jumlah Bayar</label>
-                    <input type="number" id="paymentAmount" placeholder="0"
-                        oninput="calculateChange()" onfocus="this.select()">
+                    <input type="text" id="paymentAmount" placeholder="Rp 0"
+                        oninput="formatCurrencyInput(this);calculateChange()" onfocus="this.select()">
                 </div>
             </div>
 
-            <div class="payment-section" style="padding-top:14px">
+            <div class="payment-section" style="padding-top:10px">
                 <div class="change-display" id="changeDisplay" style="display:none">
                     <div class="change-label">Kembalian</div>
                     <div class="change-amount" id="changeAmount">Rp 0</div>
@@ -2051,21 +2338,19 @@
                 </div>
 
                 <!-- Table wrapper: SCROLL ADA DI SINI, header sticky -->
-                <div class="table-wrapper" style="flex:1;min-height:0;overflow:auto;border-radius:12px;border:1px solid #E9ECEF;margin-bottom:8px">
+                <div class="table-wrapper" style="flex:1;min-height:0;overflow:auto;border-radius:12px;border:1px solid #E9ECEF;margin-bottom:8px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y pan-x">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th style="width:36px;text-align:center">#</th>
-                                <th style="width:48px;text-align:center">Icon</th>
-                                <th style="min-width:180px">Nama Produk</th>
-                                <th style="min-width:140px">💰 Kulakan/Satuan</th>
-                                <th style="min-width:145px">📦 Kulakan/Kemasan</th>
-                                <th style="min-width:130px">Harga Eceran</th>
-                                <th style="min-width:80px;text-align:center">Margin</th>
-                                <th style="min-width:155px">Grosir Satuan</th>
-                                <th style="min-width:185px">Harga Kemasan</th>
-                                <th style="min-width:110px">Stok</th>
-                                <th style="min-width:115px">Aksi</th>
+                                <th style="width:32px;text-align:center">#</th>
+                                <th style="width:44px;text-align:center">Icon</th>
+                                <th style="min-width:120px;max-width:160px">Nama Produk</th>
+                                <th style="min-width:130px">💰 Kulakan/Satuan</th>
+                                <th style="min-width:130px">📦 Kulakan/Kemasan</th>
+                                <th style="min-width:160px">Harga Satuan</th>
+                                <th style="min-width:160px">Harga Kemasan</th>
+                                <th style="min-width:95px">Stok</th>
+                                <th style="min-width:110px">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="productTableBody"></tbody>
@@ -2075,7 +2360,7 @@
             </div><!-- end productListTab -->
 
             <!-- ===== TAB: TAMBAH / EDIT PRODUK ===== -->
-            <div class="tab-content" id="productFormTab" style="flex:1;min-height:0;overflow-y:auto;padding-bottom:20px">
+            <div class="tab-content" id="productFormTab" style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-bottom:20px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y">
                 <h3 id="productFormTitle" style="margin-bottom:16px">Tambah Produk Baru</h3>
                 <input type="hidden" id="editProductId" value="">
 
@@ -2090,7 +2375,7 @@
                             <div class="pf-row">
                                 <div class="form-group" style="flex:2">
                                     <label class="form-label">Nama Produk *</label>
-                                    <input type="text" class="form-input" id="productName" placeholder="Contoh: Mie Goreng Indomie">
+                                    <input type="text" class="form-input" id="productName" placeholder="Contoh: Mie Goreng Indomie" onfocus="this.setAttribute('data-ph',this.placeholder);this.placeholder=''" onblur="this.placeholder=this.getAttribute('data-ph')">
                                 </div>
                                 <div class="form-group" style="flex:1">
                                     <label class="form-label">Kategori *</label>
@@ -2159,8 +2444,8 @@
                             <div class="pf-row">
                                 <div class="form-group" style="flex:1">
                                     <label class="form-label">Harga Beli per <span id="kulakanPkgLabel">Kemasan</span> (Rp)</label>
-                                    <input type="number" class="form-input" id="costPricePerPkg"
-                                        placeholder="Contoh: 80000" min="0" oninput="recalcKulakan()"
+                                    <input type="text" inputmode="numeric" class="form-input" id="costPricePerPkg"
+                                        placeholder="Contoh: Rp 80.000" oninput="formatCurrencyInput(this);recalcKulakan()"
                                         style="font-size:18px;font-weight:700;border-color:var(--secondary)">
                                 </div>
                                 <div class="form-group" style="flex:1">
@@ -2195,15 +2480,15 @@
                             <div class="pf-row">
                                 <div class="form-group" style="flex:1">
                                     <label class="form-label">Harga Eceran / <span id="pkgTypeLabel2">Kemasan</span></label>
-                                    <input type="number" class="form-input" id="productPricePackage" placeholder="0" min="0"
-                                        oninput="updateMarginLive()"
+                                    <input type="text" inputmode="numeric" class="form-input" id="productPricePackage" placeholder="Rp 0"
+                                        oninput="formatCurrencyInput(this);updateMarginLive()"
                                         style="font-size:16px;font-weight:700;border-color:#F4A100">
                                     <div id="marginPkgLive" style="margin-top:4px;font-size:12px;font-weight:600;min-height:18px"></div>
                                 </div>
                                 <div class="form-group" style="flex:1">
                                     <label class="form-label">Harga Grosir / <span id="pkgTypeLabel3">Kemasan</span></label>
-                                    <input type="number" class="form-input" id="productPriceWholesalePackage" placeholder="0" min="0"
-                                        oninput="updateMarginLive()">
+                                    <input type="text" inputmode="numeric" class="form-input" id="productPriceWholesalePackage" placeholder="Rp 0"
+                                        oninput="formatCurrencyInput(this);updateMarginLive()">
                                     <div id="marginWsPkgLive" style="margin-top:4px;font-size:12px;font-weight:600;min-height:18px"></div>
                                 </div>
                                 <div class="form-group" style="flex:1">
@@ -2232,8 +2517,8 @@
                             <div class="pf-row">
                                 <div class="form-group" style="flex:1">
                                     <label class="form-label">Harga Eceran * (Rp)</label>
-                                    <input type="number" class="form-input" id="productPrice"
-                                        placeholder="0" min="0" oninput="updateMarginLive()"
+                                    <input type="text" inputmode="numeric" class="form-input" id="productPrice"
+                                        placeholder="Rp 0" oninput="formatCurrencyInput(this);updateMarginLive()"
                                         style="font-size:20px;font-weight:800;border-color:var(--primary)">
                                     <div id="marginEcerLive" style="margin-top:5px;font-size:12px;font-weight:600;min-height:18px"></div>
                                 </div>
@@ -2241,8 +2526,8 @@
                             <div class="pf-row">
                                 <div class="form-group" style="flex:1">
                                     <label class="form-label">Harga Grosir (Rp)</label>
-                                    <input type="number" class="form-input" id="productPriceWholesale"
-                                        placeholder="0" min="0" oninput="updateMarginLive()">
+                                    <input type="text" inputmode="numeric" class="form-input" id="productPriceWholesale"
+                                        placeholder="Rp 0" oninput="formatCurrencyInput(this);updateMarginLive()">
                                     <div id="marginGrosirLive" style="margin-top:5px;font-size:12px;font-weight:600;min-height:18px"></div>
                                 </div>
                                 <div class="form-group" style="flex:1">
@@ -2530,7 +2815,7 @@
             
             <div class="form-group">
                 <label id="discountInputLabel">Nilai Diskon (Rp)</label>
-                <input type="number" id="discountValue" class="form-control" placeholder="0" min="0" style="font-size:18px;text-align:center">
+                <input type="text" inputmode="numeric" id="discountValue" class="form-control" placeholder="0" style="font-size:18px;text-align:center;width:100%;padding:10px;border:2px solid #E9ECEF;border-radius:8px;font-family:'JetBrains Mono',monospace">
             </div>
             
             <div id="discountPreview" style="padding:16px;background:#e8f5e9;border-radius:8px;margin-top:16px;display:none">
@@ -2546,6 +2831,9 @@
                     <span style="font-weight:bold">Harga Setelah Diskon:</span>
                     <span id="finalPrice" style="font-weight:bold;color:var(--success);font-size:20px"></span>
                 </div>
+            </div>
+            <!-- Margin info: hanya untuk admin/owner -->
+            <div id="discountMarginInfo" style="display:none;margin-top:10px;padding:12px 14px;border-radius:8px;font-size:13px;font-weight:600;border:2px solid #E9ECEF">
             </div>
         </div>
         
@@ -2587,9 +2875,21 @@ let storeSettings = {
 
 // DEFAULT USERS
 const defaultUsers = {
-    admin: { password: 'admin123', name: 'Administrator', role: 'admin' },
-    kasir: { password: 'kasir123', name: 'Kasir',         role: 'kasir' },
-    owner: { password: 'owner123', name: 'Owner',         role: 'owner' }
+    admin: {
+        password: CryptoJS.SHA256('admin123').toString(),
+        name: 'Administrator',
+        role: 'admin'
+    },
+    kasir: {
+        password: CryptoJS.SHA256('kasir123').toString(),
+        name: 'Kasir',
+        role: 'kasir'
+    },
+    owner: {
+        password: CryptoJS.SHA256('owner123').toString(),
+        name: 'Owner',
+        role: 'owner'
+    }
 };
 
 // DEFAULT PRODUCTS
@@ -2735,6 +3035,24 @@ function formatCurrency(amount) {
     return 'Rp ' + amount.toLocaleString('id-ID');
 }
 
+// Format input field dengan Rp dan pemisah ribuan
+function formatCurrencyInput(input) {
+    let value = input.value.replace(/[^\d]/g, ''); // Hapus non-digit
+    if (value === '') {
+        input.value = '';
+        return 0;
+    }
+    const numValue = parseInt(value);
+    input.value = 'Rp ' + numValue.toLocaleString('id-ID');
+    return numValue;
+}
+
+// Ambil nilai numerik dari input yang sudah diformat
+function parseCurrencyInput(input) {
+    const value = input.value.replace(/[^\d]/g, '');
+    return value === '' ? 0 : parseInt(value);
+}
+
 function updateDateTime() {
     const now = new Date();
     const dateStr = now.toLocaleDateString('id-ID', { 
@@ -2865,8 +3183,10 @@ function buildEscPos(trx) {
     push(ESC,0x45,0x01); push(GS,0x21,0x10);
     line((storeSettings.name||'TOKO').toUpperCase());
     push(GS,0x21,0x00); push(ESC,0x45,0x00);
+    if (storeSettings.subtitle) line(storeSettings.subtitle.substring(0,W));
     if (storeSettings.address) line(storeSettings.address.substring(0,W));
     if (storeSettings.phone)   line('Telp: '+storeSettings.phone);
+    if (storeSettings.email)   line(storeSettings.email.substring(0,W));
     nl();
     // Info
     push(ESC,0x61,0x00); div();
@@ -2882,22 +3202,35 @@ function buildEscPos(trx) {
         const nama = item.name.length > 30 ? item.name.substring(0,28)+'..' : item.name;
 
         // Tentukan qty & satuan yang benar sesuai mode pembelian
-        let qStr, uStr, hpu;
+        let qStr, uStr, hpu, isGrosir = false;
         if (item.sellMode === 'package' && item.qtyPerPackage) {
             // Dijual per kemasan
             const pkgQty = Math.round(item.quantity / item.qtyPerPackage);
             qStr = String(pkgQty);
             uStr = item.packageType || 'kemasan';
             hpu  = pkgQty > 0 ? Math.round(pr.total / pkgQty) : pr.total;
+            
+            // Cek apakah beli grosir kemasan
+            if (item.minWsPkgUnit && pkgQty >= item.minWsPkgUnit) {
+                isGrosir = true;
+            }
         } else {
             // Dijual per satuan ecer
             qStr = String(item.quantity);
             uStr = item.ecerUnit || item.unit || 'pcs';
             hpu  = item.quantity > 0 ? Math.round(pr.total / item.quantity) : pr.total;
+            
+            // Cek apakah beli grosir satuan
+            if (pr.wholesaleBatches && pr.wholesaleBatches > 0) {
+                isGrosir = true;
+            }
         }
 
         push(ESC,0x45,0x01); line(nama); push(ESC,0x45,0x00);
-        row('  ' + qStr + ' ' + uStr + ' x ' + formatCurrency(hpu), formatCurrency(pr.total));
+        
+        // Tampilkan qty x harga dengan label grosir jika ada
+        const priceStr = qStr + ' ' + uStr + ' x ' + formatCurrency(hpu) + (isGrosir ? ' (G)' : '');
+        row('  ' + priceStr, formatCurrency(pr.total));
 
         // Keterangan ecer dari kemasan
         if (item.sellMode === 'package' && item.qtyPerPackage) {
@@ -3032,37 +3365,25 @@ function resetLoginData() {
 function login() {
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
-
+    
     if (!username || !password) {
         alert('Username dan password harus diisi!');
         return;
     }
-
-    // Ambil data user \u2014 jika localStorage corrupt, pakai default
-    let users;
-    try {
-        const raw = localStorage.getItem('posUsers');
-        users = raw ? JSON.parse(raw) : defaultUsers;
-        // Validasi struktur \u2014 jika format lama (hash), reset ke default
-        const testUser = Object.values(users)[0];
-        if (testUser && testUser.password && testUser.password.length > 30) {
-            // Format lama pakai hash panjang \u2014 reset
-            console.warn('Format user lama terdeteksi, reset ke default');
-            localStorage.removeItem('posUsers');
-            users = defaultUsers;
-        }
-    } catch(e) {
-        users = defaultUsers;
-    }
-
+    
+    // Get users - gunakan defaultUsers jika belum ada di localStorage
+    const users = JSON.parse(localStorage.getItem('posUsers') || JSON.stringify(defaultUsers));
     const user = users[username];
+    
     if (!user) {
         alert('Username tidak ditemukan!');
         return;
     }
-
-    if (user.password !== password) {
-        alert('Password salah! Silakan coba lagi.');
+    
+    // Hash password input dan bandingkan
+    const hashedPassword = CryptoJS.SHA256(password).toString();
+    if (user.password !== hashedPassword) {
+        alert('Password salah!');
         return;
     }
     
@@ -3135,6 +3456,25 @@ function loadData() {
     const savedProducts = localStorage.getItem('posProducts');
     if (savedProducts) {
         products = JSON.parse(savedProducts);
+        
+        // MIGRATION: Ensure all products have wholesale package fields
+        let needsSave = false;
+        products.forEach(p => {
+            // Jika produk punya kemasan tapi tidak punya harga grosir kemasan, set default
+            if (p.packageType && p.qtyPerPackage > 0 && p.pricePackage > 0) {
+                if (!p.priceWholesalePackage || !p.minWholesalePackage) {
+                    // Set harga grosir kemasan default (10% lebih murah dari harga kemasan normal)
+                    p.priceWholesalePackage = Math.floor(p.pricePackage * 0.9);
+                    p.minWholesalePackage = 3;
+                    needsSave = true;
+                }
+            }
+        });
+        
+        if (needsSave) {
+            saveProducts();
+        }
+        
         if (products.length > 0) {
             nextProductId = Math.max(...products.map(p => p.id)) + 1;
         }
@@ -3202,7 +3542,19 @@ function renderProducts() {
     const _stored = localStorage.getItem('posProducts');
     products = _stored ? JSON.parse(_stored) : defaultProducts;
     const container = document.getElementById('productsGrid');
-    if (!container) return;
+    
+    console.log('[renderProducts] called', {
+        mode: currentMode,
+        productsCount: products.length,
+        containerExists: !!container,
+        category: currentCategory,
+        searchQuery: searchQuery
+    });
+    
+    if (!container) {
+        console.warn('[renderProducts] Container not found!');
+        return;
+    }
 
     // Filter berdasar kategori & search
     const filtered = products.filter(p => {
@@ -3210,7 +3562,9 @@ function renderProducts() {
         const q     = (searchQuery || '').toLowerCase();
         const srcOk = !q || p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
         return catOk && srcOk;
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name, 'id'));
+    
+    console.log(`[renderProducts] Filtered: ${filtered.length} products`);
 
     if (filtered.length === 0) {
         container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#999">
@@ -3231,7 +3585,8 @@ function renderProducts() {
         const stockPkgColor  = stockPkg  <= 2  ? 'var(--danger)' : '#888';
 
         if (currentMode === 'unit') {
-            // Card ECER — layout baru
+            // Card ECER — hanya tampilkan produk yang punya harga ecer
+            if (!p.price || p.price <= 0) return;
             const unit   = p.ecerUnit || p.unit || 'pcs';
             const hasWS  = p.priceWholesale && p.minWholesale > 0;
 
@@ -3278,6 +3633,11 @@ function renderProducts() {
             const unit     = p.ecerUnit || p.unit || 'pcs';
             const pkgLabel = `${p.packageType} · ${p.qtyPerPackage} ${unit}`;
             const hasWSpkg = p.priceWholesalePackage && p.minWholesalePackage > 0;
+            
+            // Debug log
+            if (!hasWSpkg) {
+                console.log(`Product ${p.name} missing wholesale package: priceWS=${p.priceWholesalePackage}, minWS=${p.minWholesalePackage}`);
+            }
 
             const wsPkgPill = hasWSpkg
                 ? `<span class="product-ws-pill" style="border-color:var(--secondary);color:#0D47A1;background:#EAF3FF">
@@ -3376,15 +3736,16 @@ function addToCart(productId, sellMode, isWholesale) {
         existing.quantity = existing.ecerQty;
     } else {
         const ecerUnit = product.ecerUnit || product.unit || 'pcs';
-        // Untuk kemasan: harga per ecerUnit dihitung dari harga kemasan
-        // Tapi kita simpan info kemasan agar renderCart & struk bisa tampilkan per kemasan
+        // Untuk kemasan: GUNAKAN HARGA ASLI LANGSUNG tanpa pembulatan
+        // price dan priceWholesale tetap per ecerUnit untuk kompatibilitas calculatePrice
+        const qtyPerPkg = product.qtyPerPackage || 1;
         const cartPrice    = sellMode === 'package'
-            ? Math.round((product.pricePackage||product.price*qtyPerPkg) / qtyPerPkg)
+            ? (product.pricePackage || product.price * qtyPerPkg) / qtyPerPkg
             : product.price;
         const cartPriceWs  = sellMode === 'package'
-            ? (product.priceWholesalePackage
-                ? Math.round(product.priceWholesalePackage / qtyPerPkg)
-                : Math.round((product.pricePackage||product.price*qtyPerPkg) / qtyPerPkg))
+            ? (product.priceWholesalePackage 
+                ? product.priceWholesalePackage / qtyPerPkg
+                : (product.pricePackage || product.price * qtyPerPkg) / qtyPerPkg)
             : product.priceWholesale;
         const cartMinWs    = sellMode === 'package'
             ? (product.minWholesalePackage||0) * qtyPerPkg  // dalam ecerUnit
@@ -3457,19 +3818,51 @@ function renderCart() {
         const qtyPkg    = isPkg ? Math.round(item.quantity / (item.qtyPerPackage||1)) : 0;
         const unitLabel = isPkg ? item.packageType : (item.ecerUnit||item.unit||'pcs');
         const displayQty = isPkg ? qtyPkg : item.quantity;
+        
+        // Untuk kemasan, tampilkan harga per kemasan
+        let priceDetail = '';
+        let totalPrice = pricing.total; // default untuk satuan
+        
+        if (isPkg) {
+            // Hitung harga per kemasan yang efektif (normal atau grosir)
+            const qtyInPkg = qtyPkg;
+            const isGrosir = item.minWsPkgUnit > 0 && qtyInPkg >= item.minWsPkgUnit;
+            
+            // Gunakan harga asli kemasan (BUKAN kalkulasi ulang dari effectivePrice)
+            const pricePerPkg = isGrosir 
+                ? (item.priceWsPkgUnit || item.pricePackageUnit || 0)
+                : (item.pricePackageUnit || 0);
+            
+            // HITUNG TOTAL dari harga asli kemasan × qty kemasan
+            totalPrice = pricePerPkg * qtyInPkg;
+            
+            // Debug log
+            console.log(`[CART] ${item.name}:`);
+            console.log(`  - Harga Normal: Rp ${(item.pricePackageUnit || 0).toLocaleString('id-ID')}`);
+            console.log(`  - Harga Grosir: Rp ${(item.priceWsPkgUnit || 0).toLocaleString('id-ID')}`);
+            console.log(`  - Qty: ${qtyInPkg} ${item.packageType}, Min Grosir: ${item.minWsPkgUnit}`);
+            console.log(`  - Harga/unit: Rp ${pricePerPkg.toLocaleString('id-ID')} (${isGrosir ? 'GROSIR' : 'NORMAL'})`);
+            console.log(`  - Total: Rp ${totalPrice.toLocaleString('id-ID')}`);
+            
+            priceDetail = `
+                <span style="color:var(--secondary);font-size:11px;font-weight:700">📦 ${item.packageType}</span>
+                · ${formatCurrency(pricePerPkg)}/${item.packageType}
+                ${isGrosir ? `<span style="color:var(--success);font-size:10px"> (grosir)</span>` : ''}
+                <br><span style="font-size:10px;color:#999">${item.quantity} ${item.ecerUnit||item.unit||'pcs'}</span>
+            `;
+        } else {
+            priceDetail = `
+                ${formatCurrency(pricing.effectivePrice)}/${item.ecerUnit||item.unit||'pcs'}
+                ${pricing.wholesaleBatches > 0 ? `<span style="color:var(--success);font-size:10px"> (grosir)</span>` : ''}
+            `;
+        }
 
         return `
         <div class="cart-item">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-detail">
-                    ${isPkg
-                        ? `<span style="color:var(--secondary);font-size:11px;font-weight:700">\uD83D\uDCE6 ${item.packageType}</span> \u00B7 ${item.quantity} ${item.ecerUnit||item.unit||'pcs'}`
-                        : `${formatCurrency(pricing.effectivePrice)}/${item.ecerUnit||item.unit||'pcs'}`
-                    }
-                    ${pricing.wholesaleBatches > 0
-                        ? `<span style="color:var(--success);font-size:10px"> (grosir)</span>`
-                        : ''}
+                    ${priceDetail}
                 </div>
                 ${item.discount && item.discount > 0
                     ? `<div style="font-size:11px;color:var(--danger)">Diskon: -${formatCurrency(item.discount)}</div>`
@@ -3479,7 +3872,7 @@ function renderCart() {
                 <button class="qty-btn" onclick="updateCartQty('${item.cartKey}', -1)">\u2212</button>
                 <span class="qty-display">${displayQty} ${unitLabel}</span>
                 <button class="qty-btn" onclick="updateCartQty('${item.cartKey}', 1)">+</button>
-                <div class="cart-item-total">${formatCurrency(pricing.total)}</div>
+                <div class="cart-item-total">${formatCurrency(totalPrice)}</div>
                 <button class="remove-btn" onclick="removeFromCart('${item.cartKey}')">\u00D7</button>
                 <button class="discount-btn" onclick="showDiscountModal('${item.cartKey}')">\uD83D\uDCB8</button>
             </div>
@@ -3491,7 +3884,18 @@ function renderCart() {
 
 function updateSummary() {
     const subtotal = cart.reduce((sum, item) => {
-        return sum + calculatePrice(item, item.quantity).total;
+        // Untuk kemasan, hitung dari harga asli kemasan
+        if (item.sellMode === 'package' && item.qtyPerPackage) {
+            const qtyPkg = Math.round(item.quantity / item.qtyPerPackage);
+            const isGrosir = item.minWsPkgUnit > 0 && qtyPkg >= item.minWsPkgUnit;
+            const pricePerPkg = isGrosir 
+                ? (item.priceWsPkgUnit || item.pricePackageUnit || 0)
+                : (item.pricePackageUnit || 0);
+            return sum + (pricePerPkg * qtyPkg);
+        } else {
+            // Untuk satuan, gunakan calculatePrice seperti biasa
+            return sum + calculatePrice(item, item.quantity).total;
+        }
     }, 0);
     
     // Hitung total diskon item
@@ -3499,8 +3903,9 @@ function updateSummary() {
         return sum + (item.discount || 0);
     }, 0);
     
-    // Diskon total tambahan (jika ada)
-    const additionalDiscount = parseFloat(document.getElementById('additionalDiscount')?.value) || 0;
+    // Diskon total tambahan (jika ada) - parse dari format Rp
+    const additionalDiscountInput = document.getElementById('additionalDiscount');
+    const additionalDiscount = additionalDiscountInput ? parseCurrencyInput(additionalDiscountInput) : 0;
     const totalDiscount = itemDiscount + additionalDiscount;
     
     const afterDiscount = subtotal - totalDiscount;
@@ -3530,6 +3935,17 @@ function resetCart() {
     document.getElementById('paymentAmount').value = '';
     document.getElementById('additionalDiscount').value = '';
     document.getElementById('changeDisplay').style.display = 'none';
+    
+    // PERBAIKAN BUG #1: Reset display diskon agar tidak muncul di struk berikutnya
+    const discountDisplay = document.getElementById('discountDisplay');
+    if (discountDisplay) {
+        discountDisplay.style.display = 'none';
+    }
+    const discountAmount = document.getElementById('discountAmount');
+    if (discountAmount) {
+        discountAmount.textContent = 'Rp 0';
+    }
+    
     closeRecheckPanel();
     renderCart();
     updateSummary();
@@ -3544,20 +3960,35 @@ function clearCart() {
 
 function calculateChange() {
     const subtotal = cart.reduce((sum, item) => {
-        return sum + calculatePrice(item, item.quantity).total;
+        // Untuk kemasan, hitung dari harga asli kemasan
+        if (item.sellMode === 'package' && item.qtyPerPackage) {
+            const qtyPkg = Math.round(item.quantity / item.qtyPerPackage);
+            const isGrosir = item.minWsPkgUnit > 0 && qtyPkg >= item.minWsPkgUnit;
+            const pricePerPkg = isGrosir 
+                ? (item.priceWsPkgUnit || item.pricePackageUnit || 0)
+                : (item.pricePackageUnit || 0);
+            return sum + (pricePerPkg * qtyPkg);
+        } else {
+            // Untuk satuan, gunakan calculatePrice seperti biasa
+            return sum + calculatePrice(item, item.quantity).total;
+        }
     }, 0);
     
     const itemDiscount = cart.reduce((sum, item) => {
         return sum + (item.discount || 0);
     }, 0);
     
-    const additionalDiscount = parseFloat(document.getElementById('additionalDiscount')?.value) || 0;
+    // Parse dari format Rp
+    const additionalDiscountInput = document.getElementById('additionalDiscount');
+    const additionalDiscount = additionalDiscountInput ? parseCurrencyInput(additionalDiscountInput) : 0;
     const totalDiscount = itemDiscount + additionalDiscount;
     
     const afterDiscount = subtotal - totalDiscount;
     const total = afterDiscount * (taxEnabled ? 1.1 : 1);
     
-    const payment = parseFloat(document.getElementById('paymentAmount').value) || 0;
+    // Parse jumlah bayar dari format Rp
+    const paymentInput = document.getElementById('paymentAmount');
+    const payment = paymentInput ? parseCurrencyInput(paymentInput) : 0;
     const change = payment - total;
     
     const changeDisplay = document.getElementById('changeDisplay');
@@ -3580,7 +4011,8 @@ function calculateChange() {
 function checkout() {
     if (cart.length === 0) { alert('Keranjang kosong!'); return; }
     const total   = parseFloat(document.getElementById('total').textContent.replace(/[^0-9]/g,'')) || 0;
-    const payment = parseFloat(document.getElementById('paymentAmount').value) || 0;
+    const paymentInput = document.getElementById('paymentAmount');
+    const payment = paymentInput ? parseCurrencyInput(paymentInput) : 0;
     if (payment < total) { alert('Jumlah pembayaran kurang!\nTotal: ' + formatCurrency(total)); return; }
 
     const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace(/[^0-9]/g,'')) || 0;
@@ -3602,7 +4034,26 @@ function checkout() {
         date        : new Date().toISOString(),
         cashier     : currentUser.name,
         items       : cart.map(item => {
-            const pricing = calculatePrice(item, item.quantity);
+            // Hitung pricing yang benar untuk kemasan
+            let pricing;
+            if (item.sellMode === 'package' && item.qtyPerPackage) {
+                const qtyPkg = Math.round(item.quantity / item.qtyPerPackage);
+                const isGrosir = item.minWsPkgUnit > 0 && qtyPkg >= item.minWsPkgUnit;
+                const pricePerPkg = isGrosir 
+                    ? (item.priceWsPkgUnit || item.pricePackageUnit || 0)
+                    : (item.pricePackageUnit || 0);
+                const total = pricePerPkg * qtyPkg;
+                
+                pricing = {
+                    total: total,
+                    effectivePrice: item.price, // per ecer untuk kompatibilitas
+                    isFullWholesale: isGrosir,
+                    wholesaleBatches: isGrosir ? 1 : 0,
+                };
+            } else {
+                pricing = calculatePrice(item, item.quantity);
+            }
+            
             return {
                 ...item,
                 pricing,
@@ -3611,6 +4062,10 @@ function checkout() {
                 ecerUnit     : item.ecerUnit || item.unit || 'pcs',
                 packageType  : item.packageType,
                 qtyPerPackage: item.qtyPerPackage,
+                // info grosir kemasan untuk struk
+                minWsPkgUnit : item.minWsPkgUnit || 0,
+                priceWsPkgUnit: item.priceWsPkgUnit || 0,
+                pricePackageUnit: item.pricePackageUnit || 0,
             };
         }),
         subtotal, discount, tax, total, payment,
@@ -3633,8 +4088,10 @@ function showReceipt(transaction) {
             <div style="font-size:20px;margin-bottom:5px">${storeSettings.logo}</div>
             <div style="font-size:14px;font-weight:bold;margin-bottom:3px">${storeSettings.name}</div>
             <div style="font-size:9px;color:#666;margin-bottom:10px;line-height:1.3">
+                ${storeSettings.subtitle ? storeSettings.subtitle + '<br>' : ''}
                 ${storeSettings.address}<br>
                 Telp: ${storeSettings.phone}
+                ${storeSettings.email ? '<br>' + storeSettings.email : ''}
             </div>
             
             <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:8px 0;margin:10px 0">
@@ -3654,22 +4111,32 @@ function showReceipt(transaction) {
                     const shortName = item.name.length > 25 ? item.name.substring(0, 25) + '...' : item.name;
 
                     // Tentukan qty, satuan, harga per unit sesuai mode jual
-                    let displayQty, displayUnit, displayHpu;
+                    let displayQty, displayUnit, displayHpu, isGrosir = false;
                     if (item.sellMode === 'package' && item.qtyPerPackage) {
                         displayQty  = Math.round(item.quantity / item.qtyPerPackage);
                         displayUnit = item.packageType || 'kemasan';
                         displayHpu  = displayQty > 0 ? Math.round(pricing.total / displayQty) : pricing.total;
+                        
+                        // Cek grosir kemasan
+                        if (item.minWsPkgUnit && displayQty >= item.minWsPkgUnit) {
+                            isGrosir = true;
+                        }
                     } else {
                         displayQty  = item.quantity;
                         displayUnit = item.ecerUnit || item.unit || 'pcs';
                         displayHpu  = item.quantity > 0 ? Math.round(pricing.total / item.quantity) : pricing.total;
+                        
+                        // Cek grosir satuan
+                        if (pricing.isFullWholesale) {
+                            isGrosir = true;
+                        }
                     }
 
                     let itemHtml = `
                         <div style="margin-bottom:8px;font-size:10px">
                             <div style="font-weight:bold">${shortName}</div>
                             <div style="display:flex;justify-content:space-between;margin-top:2px">
-                                <span>${displayQty} ${displayUnit} x ${formatCurrency(displayHpu)}</span>
+                                <span>${displayQty} ${displayUnit} x ${formatCurrency(displayHpu)}${isGrosir ? ' (G)' : ''}</span>
                                 <span><strong>${formatCurrency(pricing.total)}</strong></span>
                             </div>
                     `;
@@ -3679,11 +4146,18 @@ function showReceipt(transaction) {
                             (${item.quantity} ${item.ecerUnit||item.unit})</div>`;
                     }
                     
-                    // Label grosir — jika isFullWholesale, tampilkan "GROSIR" saja (tidak campuran)
-                    if (pricing.isFullWholesale) {
+                    // Label grosir detail
+                    if (isGrosir) {
+                        const pricePerUnit = item.sellMode === 'package' 
+                            ? (item.priceWsPkgUnit || item.pricePackageUnit || 0)
+                            : (item.priceWholesale || item.price);
+                        const unitLabel = item.sellMode === 'package' 
+                            ? displayUnit 
+                            : (item.ecerUnit||item.unit||'pcs');
+                        
                         itemHtml += `
                             <div style="font-size:8px;color:#06D6A0;margin-left:5px;font-weight:bold">
-                                ✓ Harga Grosir (${item.quantity} ${item.ecerUnit||item.unit||'pcs'} @${formatCurrency(item.priceWholesale)})
+                                ✓ Harga Grosir (@${formatCurrency(pricePerUnit)}/${unitLabel})
                             </div>
                         `;
                     }
@@ -3831,7 +4305,13 @@ function showDiscountModal(cartKey) {
     
     // Reset form
     discountType = 'nominal';
-    document.getElementById('discountValue').value = item.discount || '';
+    const discountEl = document.getElementById('discountValue');
+    if (item.discount > 0) {
+        discountEl.value = item.discount;
+        formatCurrencyInput(discountEl);
+    } else {
+        discountEl.value = '';
+    }
     setDiscountType('nominal');
     
     // Show modal
@@ -3846,35 +4326,61 @@ function showDiscountModal(cartKey) {
 function closeDiscountModal() {
     document.getElementById('discountModal').classList.remove('active');
     document.getElementById('discountPreview').style.display = 'none';
-    discountItemId = null;
+    const mi = document.getElementById('discountMarginInfo');
+    if (mi) mi.style.display = 'none';
+    // PERBAIKAN BUG #3: reset currentDiscountItemId bukan discountItemId
+    currentDiscountItemId = null;
 }
 
 function setDiscountType(type) {
+    const prevType = discountType;
     discountType = type;
     
     const nominalBtn = document.getElementById('discountTypeNominal');
     const percentBtn = document.getElementById('discountTypePercent');
     const label = document.getElementById('discountInputLabel');
+    const discountEl = document.getElementById('discountValue');
+    
+    // Jika beralih tipe, kosongkan input
+    if (prevType !== type) {
+        discountEl.value = '';
+        document.getElementById('discountPreview').style.display = 'none';
+        const mi = document.getElementById('discountMarginInfo');
+        if (mi) mi.style.display = 'none';
+    }
     
     if (type === 'nominal') {
         nominalBtn.style.background = 'var(--primary)';
         percentBtn.style.background = 'var(--gray)';
         label.textContent = 'Nilai Diskon (Rp)';
+        discountEl.placeholder = 'Rp 0';
+        discountEl.inputMode = 'numeric';
     } else {
         nominalBtn.style.background = 'var(--gray)';
         percentBtn.style.background = 'var(--primary)';
         label.textContent = 'Persentase Diskon (%)';
+        discountEl.placeholder = '%';
+        discountEl.inputMode = 'decimal';
     }
     
-    // Update preview
-    const item = cart.find(i => i.id === discountItemId);
+    // Update preview - PERBAIKAN BUG #3: gunakan currentDiscountItemId (cartKey)
+    const item = cart.find(i => i.cartKey === currentDiscountItemId);
     if (item) updateDiscountPreview(item);
 }
 
 function updateDiscountPreview(item) {
     const pricing = calculatePrice(item, item.quantity);
     const originalPrice = pricing.total;
-    const discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+    const discountEl = document.getElementById('discountValue');
+    
+    // Format input Rp jika mode nominal
+    let discountValue = 0;
+    if (discountType === 'nominal') {
+        formatCurrencyInput(discountEl);
+        discountValue = parseCurrencyInput(discountEl) || 0;
+    } else {
+        discountValue = parseFloat(discountEl.value) || 0;
+    }
     
     let discountAmount = 0;
     if (discountType === 'nominal') {
@@ -3895,6 +4401,44 @@ function updateDiscountPreview(item) {
     document.getElementById('discountPreviewAmount').textContent = formatCurrency(discountAmount);
     document.getElementById('finalPrice').textContent = formatCurrency(finalPrice);
     document.getElementById('discountPreview').style.display = 'block';
+    
+    // Margin info — hanya admin/owner
+    const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'owner');
+    const marginEl = document.getElementById('discountMarginInfo');
+    if (marginEl) {
+        if (isAdmin && discountAmount > 0) {
+            const costPrice = (item.costPrice || 0) * item.quantity;
+            if (costPrice > 0) {
+                const margin = finalPrice - costPrice;
+                const marginPct = ((margin / costPrice) * 100).toFixed(1);
+                const isLoss = margin < 0;
+                const color = isLoss ? '#c62828' : (parseFloat(marginPct) < 10 ? '#e65100' : '#2e7d32');
+                const bg = isLoss ? '#ffebee' : (parseFloat(marginPct) < 10 ? '#fff3e0' : '#e8f5e9');
+                const border = isLoss ? '#ef9a9a' : (parseFloat(marginPct) < 10 ? '#ffcc02' : '#a5d6a7');
+                marginEl.style.display = 'block';
+                marginEl.style.background = bg;
+                marginEl.style.borderColor = border;
+                marginEl.style.color = color;
+                marginEl.innerHTML = `
+                    📊 <strong>Info Margin (Admin):</strong><br>
+                    <span style="font-size:12px;font-weight:400">
+                        Modal: ${formatCurrency(costPrice)} &nbsp;·&nbsp;
+                        Harga jual setelah diskon: ${formatCurrency(finalPrice)}<br>
+                        Laba: ${formatCurrency(margin)} &nbsp;·&nbsp;
+                        Margin: <strong style="font-size:15px;color:${color}">${marginPct}%</strong>
+                        ${isLoss ? ' ⚠️ <strong>RUGI!</strong>' : ''}
+                    </span>`;
+            } else {
+                marginEl.style.display = 'block';
+                marginEl.style.background = '#f5f5f5';
+                marginEl.style.borderColor = '#ccc';
+                marginEl.style.color = '#888';
+                marginEl.innerHTML = '📊 <strong>Info Margin (Admin):</strong> Harga modal belum diset untuk produk ini.';
+            }
+        } else {
+            marginEl.style.display = 'none';
+        }
+    }
 }
 
 // Event listener untuk input diskon
@@ -3902,19 +4446,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const discountInput = document.getElementById('discountValue');
     if (discountInput) {
         discountInput.addEventListener('input', function() {
-            const item = cart.find(i => i.id === discountItemId);
+            // PERBAIKAN BUG #3: gunakan currentDiscountItemId (cartKey)
+            const item = cart.find(i => i.cartKey === currentDiscountItemId);
             if (item) updateDiscountPreview(item);
         });
     }
 });
 
 function applyDiscount() {
-    const item = cart.find(i => i.id === discountItemId);
+    // PERBAIKAN BUG #3: Gunakan currentDiscountItemId yang berisi cartKey
+    const item = cart.find(i => i.cartKey === currentDiscountItemId);
     if (!item) return;
     
     const pricing = calculatePrice(item, item.quantity);
     const originalPrice = pricing.total;
-    const discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+    let discountValue = 0;
+    if (discountType === 'nominal') {
+        discountValue = parseCurrencyInput(document.getElementById('discountValue')) || 0;
+    } else {
+        discountValue = parseFloat(document.getElementById('discountValue').value) || 0;
+    }
     
     let discountAmount = 0;
     if (discountType === 'nominal') {
@@ -3978,6 +4529,8 @@ function openProducts() {
 
 function closeProductsModal() {
     document.getElementById('productsModal').classList.remove('active');
+    const s = document.getElementById('productSearchInput');
+    if (s) { s.value = ''; filterProductTable(''); }
 }
 
 function switchProductTab(tab) {
@@ -4005,14 +4558,14 @@ function renderProductTable(filter) {
     const q = (filter !== undefined ? filter : (document.getElementById('productSearchInput')?.value || '')).toLowerCase().trim();
     const tbody = document.getElementById('productTableBody');
 
-    const filtered = q
+    const filtered = (q
         ? products.filter(p =>
             p.name.toLowerCase().includes(q) ||
             (p.sku || '').toLowerCase().includes(q) ||
             (p.category || '').toLowerCase().includes(q) ||
             (p.ecerUnit || p.unit || '').toLowerCase().includes(q) ||
             (p.packageType || '').toLowerCase().includes(q))
-        : products;
+        : products).sort((a, b) => a.name.localeCompare(b.name, 'id'));
 
     // Update count label
     const countEl = document.getElementById('productSearchCount');
@@ -4043,26 +4596,41 @@ function renderProductTable(filter) {
             ? Math.round((p.price - costUnit) / costUnit * 100) : null;
         const marginPkg  = costPkg > 0 && p.pricePackage > 0
             ? Math.round((p.pricePackage - costPkg) / costPkg * 100) : null;
+        const profitEcer = (costUnit > 0 && p.price > 0) ? (p.price - costUnit) : null;
+        const profitPkg  = (costPkg > 0 && p.pricePackage > 0) ? (p.pricePackage - costPkg) : null;
 
-        function marginBadge(pct) {
+        function marginBadge(pct, profitRp) {
             if (pct === null) return '<span style="color:#ccc">—</span>';
             const col = pct >= 20 ? '#06D6A0' : pct >= 10 ? '#F4A100' : '#EF476F';
-            return `<span style="color:${col};font-weight:800;font-size:15px">${pct}%</span>`;
+            return `<span style="color:${col};font-weight:800;font-size:16px">${pct}%</span>`
+                 + (profitRp !== null ? `<br><small style="color:${col};font-size:11px;font-weight:600">+${formatCurrency(profitRp)}</small>` : '');
         }
 
         const stockPkg = qty > 0
-            ? `<br><small style="color:#888;font-size:12px">${Math.floor(p.stock / qty)} ${pkgType || 'kemasan'}</small>` : '';
+            ? `<br><span style="color:#555;font-size:15px;font-weight:700">(${Math.floor(p.stock / qty)} ${pkgType || 'kemasan'})</span>` : '';
 
         let hargaKemasan = '<span style="color:#ddd">—</span>';
         if (pkgType && qty > 0) {
+            const marginPkgCol = marginPkg !== null ? (marginPkg>=20?'#06D6A0':marginPkg>=10?'#F4A100':'#EF476F') : null;
             const bEcer   = p.pricePackage
-                ? `<div>Ecer: <b>${formatCurrency(p.pricePackage)}</b> ${marginPkg !== null ? `<span style="color:${marginPkg>=20?'#06D6A0':marginPkg>=10?'#F4A100':'#EF476F'};font-size:12px">${marginPkg}%</span>` : ''}</div>`
+                ? `<div><b style="font-size:15px">${formatCurrency(p.pricePackage)}</b>${marginPkgCol ? `<br><small style="color:${marginPkgCol};font-weight:700">${marginPkg}%${profitPkg!==null?' +'+formatCurrency(profitPkg):''}</small>` : ''}</div>`
                 : '';
             const bGrosir = p.priceWholesalePackage
-                ? `<div style="color:var(--secondary)">Grosir: <b>${formatCurrency(p.priceWholesalePackage)}</b>${p.minWholesalePackage ? ` <small>min ${p.minWholesalePackage}</small>` : ''}</div>`
+                ? `<div style="color:var(--secondary);margin-top:2px"><b style="font-size:14px">${formatCurrency(p.priceWholesalePackage)}</b>${p.minWholesalePackage ? `<br><small style="color:#888">min ${p.minWholesalePackage}</small>` : ''}</div>`
                 : '';
             if (bEcer || bGrosir) hargaKemasan = bEcer + bGrosir;
         }
+
+        const marginEcerCol = marginEcer !== null ? (marginEcer>=20?'#06D6A0':marginEcer>=10?'#F4A100':'#EF476F') : null;
+        const hargaSatuan = (() => {
+            const bEcer = p.price
+                ? `<div><b style="font-size:16px">${formatCurrency(p.price)}</b>${marginEcerCol ? `<br><small style="color:${marginEcerCol};font-weight:700">${marginEcer}%${profitEcer!==null?' +'+formatCurrency(profitEcer):''}</small>` : ''}</div>`
+                : '<span style="color:#ddd">—</span>';
+            const bGrosir = p.priceWholesale
+                ? `<div style="color:var(--secondary);margin-top:3px"><b style="font-size:15px">${formatCurrency(p.priceWholesale)}</b>${p.minWholesale ? `<br><small style="color:#888">min ${p.minWholesale} ${unit}</small>` : ''}</div>`
+                : '';
+            return bEcer + bGrosir;
+        })();
 
         // Highlight search match
         function hl(text) {
@@ -4075,29 +4643,23 @@ function renderProductTable(filter) {
         <tr>
             <td style="text-align:center;color:#aaa;font-size:13px">${idx + 1}</td>
             <td style="text-align:center">${iconHtml}</td>
-            <td>
+            <td style="max-width:160px;word-break:break-word">
                 <strong style="font-size:14px">${hl(p.name)}</strong>
                 <div style="font-size:11px;color:var(--gray);font-family:monospace">${p.sku || ''}</div>
                 ${pkgType && qty ? `<div style="font-size:11px;color:var(--secondary)">1 ${hl(pkgType)} = ${qty} ${unit}</div>` : ''}
             </td>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#856404">
-                ${costUnit > 0 ? formatCurrency(costUnit) + `<br><small style="color:#aaa;font-size:11px">/${unit}</small>` : '<span style="color:#ddd">—</span>'}
+            <td style="font-family:'JetBrains Mono',monospace;color:#856404">
+                ${costUnit > 0 ? `<b style="font-size:16px">${formatCurrency(costUnit)}</b><br><small style="color:#aaa;font-size:11px">/${unit}</small>` : '<span style="color:#ddd">—</span>'}
             </td>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#6D4C00">
-                ${costPkg > 0 && pkgType ? formatCurrency(costPkg) + `<br><small style="color:#aaa;font-size:11px">/${pkgType}</small>` : '<span style="color:#ddd">—</span>'}
+            <td style="font-family:'JetBrains Mono',monospace;color:#6D4C00">
+                ${costPkg > 0 && pkgType ? `<b style="font-size:16px">${formatCurrency(costPkg)}</b><br><small style="color:#aaa;font-size:11px">/${pkgType}</small>` : '<span style="color:#ddd">—</span>'}
             </td>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700">
-                ${formatCurrency(p.price)}<br><small style="color:#888;font-size:11px">/${unit}</small>
+            <td style="font-family:'JetBrains Mono',monospace;font-weight:700">
+                ${hargaSatuan}
             </td>
-            <td style="text-align:center">${marginBadge(marginEcer)}</td>
-            <td style="font-size:13px">
-                ${p.priceWholesale
-                    ? `<b>${formatCurrency(p.priceWholesale)}</b>${p.minWholesale ? `<br><small style="color:#888">min ${p.minWholesale} ${unit}</small>` : ''}`
-                    : '<span style="color:#ddd">—</span>'}
-            </td>
-            <td style="font-size:13px">${hargaKemasan}</td>
+            <td>${hargaKemasan}</td>
             <td>
-                <b style="font-size:15px">${p.stock}</b> <small>${unit}</small>${stockPkg}
+                <b style="font-size:16px">${p.stock}</b> <small>${unit}</small>${stockPkg}
             </td>
             <td>
                 <button class="btn" style="padding:6px 10px;font-size:13px;background:var(--secondary);color:white;margin-bottom:4px;display:block;width:100%" onclick="editProduct(${p.id})">✏️ Edit</button>
@@ -4125,7 +4687,9 @@ function editProduct(id) {
     document.getElementById('productCategory').value = product.category || 'sembako';
     document.getElementById('productUnit').value = product.ecerUnit || product.unit || '';
     document.getElementById('productPrice').value = product.price || '';
+    formatCurrencyInput(document.getElementById('productPrice'));
     document.getElementById('productPriceWholesale').value = product.priceWholesale || '';
+    formatCurrencyInput(document.getElementById('productPriceWholesale'));
     document.getElementById('productMinWholesale').value = product.minWholesale || '';
 
     // Kemasan kulakan
@@ -4135,6 +4699,7 @@ function editProduct(id) {
     const savedCostPerPkg = product.costPricePerPackage ||
         (product.costPrice && product.qtyPerPackage ? Math.round(product.costPrice * product.qtyPerPackage) : '');
     document.getElementById('costPricePerPkg').value = savedCostPerPkg || '';
+    formatCurrencyInput(document.getElementById('costPricePerPkg'));
     document.getElementById('productCostPrice').value = product.costPrice || '';
 
     // Stok
@@ -4143,7 +4708,9 @@ function editProduct(id) {
 
     // Harga kemasan jual
     document.getElementById('productPricePackage').value = product.pricePackage || '';
+    formatCurrencyInput(document.getElementById('productPricePackage'));
     document.getElementById('productPriceWholesalePackage').value = product.priceWholesalePackage || '';
+    formatCurrencyInput(document.getElementById('productPriceWholesalePackage'));
     document.getElementById('productMinWholesalePackage').value = product.minWholesalePackage || '';
     
     // Handle icon (emoji or image)
@@ -4372,7 +4939,7 @@ function showToast(msg) {
 function recalcKulakan() {
     const pkgType  = (document.getElementById('productPackageType').value || '').trim();
     const qtyPkg   = parseInt(document.getElementById('productQtyPerPackage').value) || 0;
-    const costPkg  = parseFloat(document.getElementById('costPricePerPkg').value) || 0;
+    const costPkg  = parseCurrencyInput(document.getElementById('costPricePerPkg')) || 0;
     const stokPkg  = parseInt(document.getElementById('stockInPkg').value) || 0;
     const unit     = (document.getElementById('productUnit').value || 'pcs').trim();
     const pkgLabel = pkgType || 'kemasan';
@@ -4444,10 +5011,10 @@ function renderSaranHarga(costPerUnit) {
     }
 
     const targets = [
-        { margin: 10, label: 'Tipis',    color: '#EF476F', grosirFactor: 0.95 },
-        { margin: 15, label: 'Standar',  color: '#F4A100', grosirFactor: 0.94 },
-        { margin: 20, label: 'Ideal ⭐', color: '#06D6A0', grosirFactor: 0.93, recommended: true },
-        { margin: 30, label: 'Gemuk',    color: '#FF6B35', grosirFactor: 0.91 },
+        { margin:  5, label: 'Tipis',    color: '#EF476F', grosirFactor: 0.96 },
+        { margin: 10, label: 'Standar',  color: '#F4A100', grosirFactor: 0.95 },
+        { margin: 15, label: 'Ideal ⭐', color: '#06D6A0', grosirFactor: 0.94, recommended: true },
+        { margin: 20, label: 'Gemuk',    color: '#FF6B35', grosirFactor: 0.93 },
     ];
 
     // --- SARAN SATUAN ---
@@ -4501,22 +5068,28 @@ function renderSaranHarga(costPerUnit) {
 }
 
 function applySaran(hargaJual, hargaGrosir) {
-    document.getElementById('productPrice').value = hargaJual;
-    document.getElementById('productPriceWholesale').value = hargaGrosir;
+    const elPrice = document.getElementById('productPrice');
+    const elWS = document.getElementById('productPriceWholesale');
+    elPrice.value = hargaJual;
+    formatCurrencyInput(elPrice);
+    elWS.value = hargaGrosir;
+    formatCurrencyInput(elWS);
     updateMarginLive();
-    const el = document.getElementById('productPrice');
-    el.style.background = '#E8FFF8';
-    setTimeout(() => { el.style.background = ''; }, 700);
+    elPrice.style.background = '#E8FFF8';
+    setTimeout(() => { elPrice.style.background = ''; }, 700);
 }
 
 function applySaranPkg(hargaPkg, hargaGrosirPkg) {
-    document.getElementById('productPricePackage').value = hargaPkg;
-    document.getElementById('productPriceWholesalePackage').value = hargaGrosirPkg;
+    const elPkg = document.getElementById('productPricePackage');
+    const elWsPkg = document.getElementById('productPriceWholesalePackage');
+    elPkg.value = hargaPkg;
+    formatCurrencyInput(elPkg);
+    elWsPkg.value = hargaGrosirPkg;
+    formatCurrencyInput(elWsPkg);
     updateMarginLive();
-    const el = document.getElementById('productPricePackage');
-    if (el) {
-        el.style.background = '#FFF8E1';
-        setTimeout(() => { el.style.background = ''; }, 700);
+    if (elPkg) {
+        elPkg.style.background = '#FFF8E1';
+        setTimeout(() => { elPkg.style.background = ''; }, 700);
     }
 }
 
@@ -4527,10 +5100,10 @@ function updateMarginLive() {
     const pkgType   = (document.getElementById('productPackageType').value || 'kemasan').trim();
     const unit      = (document.getElementById('productUnit').value || 'pcs').trim();
 
-    const hargaEcer  = parseFloat(document.getElementById('productPrice').value) || 0;
-    const hargaWS    = parseFloat(document.getElementById('productPriceWholesale').value) || 0;
-    const hargaPkg   = parseFloat(document.getElementById('productPricePackage').value) || 0;
-    const hargaWsPkg = parseFloat(document.getElementById('productPriceWholesalePackage').value) || 0;
+    const hargaEcer  = parseCurrencyInput(document.getElementById('productPrice')) || 0;
+    const hargaWS    = parseCurrencyInput(document.getElementById('productPriceWholesale')) || 0;
+    const hargaPkg   = parseCurrencyInput(document.getElementById('productPricePackage')) || 0;
+    const hargaWsPkg = parseCurrencyInput(document.getElementById('productPriceWholesalePackage')) || 0;
 
     function marginSpan(cost, jual, satuan) {
         if (!cost || !jual) return '';
@@ -4599,9 +5172,9 @@ function saveProduct() {
     const name       = document.getElementById('productName').value.trim();
     const sku        = document.getElementById('productSKU').value.trim();
     const category   = document.getElementById('productCategory').value;
-    const price      = parseFloat(document.getElementById('productPrice').value) || 0;
+    const price      = parseCurrencyInput(document.getElementById('productPrice')) || 0;
     const costPrice  = parseFloat(document.getElementById('productCostPrice').value) || 0;
-    const priceWS    = parseFloat(document.getElementById('productPriceWholesale').value) || 0;
+    const priceWS    = parseCurrencyInput(document.getElementById('productPriceWholesale')) || 0;
     const minWS      = parseInt(document.getElementById('productMinWholesale').value) || 0;
     const ecerUnit   = (document.getElementById('productUnit').value || '').trim();
     
@@ -4612,9 +5185,9 @@ function saveProduct() {
 
     const pkgType    = (document.getElementById('productPackageType').value||'').trim();
     const qtyPerPkg  = parseInt(document.getElementById('productQtyPerPackage').value) || 0;
-    const costPerPkg = parseFloat(document.getElementById('costPricePerPkg').value) || 0;
-    const pricePkg      = parseFloat(document.getElementById('productPricePackage').value) || 0;
-    const priceWsPkg    = parseFloat(document.getElementById('productPriceWholesalePackage').value) || 0;
+    const costPerPkg = parseCurrencyInput(document.getElementById('costPricePerPkg')) || 0;
+    const pricePkg      = parseCurrencyInput(document.getElementById('productPricePackage')) || 0;
+    const priceWsPkg    = parseCurrencyInput(document.getElementById('productPriceWholesalePackage')) || 0;
     const minWsPkg      = parseInt(document.getElementById('productMinWholesalePackage').value) || 0;
 
     if (!name || !ecerUnit || price <= 0) {
@@ -5281,15 +5854,26 @@ function setupEventListeners() {
 
 function initializeApp() {
     loadData();
-    renderProducts();
-    renderCart();
-    updateSummary();
+    
+    // Ensure DOM is ready before rendering
+    setTimeout(() => {
+        renderProducts();
+        renderCart();
+        updateSummary();
+    }, 10);
+    
     updateDateTime();
     setInterval(updateDateTime, 1000);
 }
 
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
+    // PERBAIKAN: Pastikan defaultUsers tersimpan di localStorage jika belum ada
+    if (!localStorage.getItem('posUsers')) {
+        localStorage.setItem('posUsers', JSON.stringify(defaultUsers));
+        console.log('✅ Default users created in localStorage');
+    }
+    
     // Load store settings first (before login)
     const savedSettings = localStorage.getItem('storeSettings');
     if (savedSettings) {
@@ -5641,7 +6225,8 @@ function openAddUserModal() {
     document.getElementById('userFullName').value = '';
     document.getElementById('userPassword').value = '';
     document.getElementById('userPasswordConfirm').value = '';
-    document.getElementById('userRole').value = 'kasir';
+    // FIX: Gunakan querySelector untuk menghindari duplicate ID issue
+    document.querySelector('#userFormModal #userRole').value = 'kasir';
     document.getElementById('passwordHint').textContent = 'Minimal 6 karakter';
     document.getElementById('passwordHint').style.display = 'block';
     
@@ -5667,7 +6252,8 @@ function editUser(username) {
     document.getElementById('userFullName').value = user.name;
     document.getElementById('userPassword').value = '';
     document.getElementById('userPasswordConfirm').value = '';
-    document.getElementById('userRole').value = user.role;
+    // FIX: Gunakan querySelector untuk menghindari duplicate ID issue
+    document.querySelector('#userFormModal #userRole').value = user.role;
     document.getElementById('passwordHint').textContent = 'Kosongkan jika tidak ingin mengubah password';
     document.getElementById('passwordHint').style.display = 'block';
     
@@ -5681,7 +6267,8 @@ function saveUser() {
     const fullName = document.getElementById('userFullName').value.trim();
     const password = document.getElementById('userPassword').value;
     const passwordConfirm = document.getElementById('userPasswordConfirm').value;
-    const role = document.getElementById('userRole').value;
+    // FIX: Gunakan querySelector untuk menghindari duplicate ID issue
+    const role = document.querySelector('#userFormModal #userRole').value;
     
     // Validasi
     if (!username || !fullName) {
@@ -5714,7 +6301,7 @@ function saveUser() {
         }
         
         users[username] = {
-            password: password,
+            password: CryptoJS.SHA256(password).toString(),
             name: fullName,
             role: role,
             createdAt: new Date().toISOString()
@@ -5736,7 +6323,7 @@ function saveUser() {
                 return;
             }
             
-            users[editingUsername].password = password;
+            users[editingUsername].password = CryptoJS.SHA256(password).toString();
         }
         
         users[editingUsername].name = fullName;
@@ -6108,17 +6695,31 @@ document.addEventListener('keydown', function(e) {
 </script>
 <script>
 // ============================================================
-// BLOCK PULL-TO-REFRESH — Huawei MateTab / Android Chrome
-// Mencegah refresh halaman saat swipe bawah ke atas dari atas
+// BLOCK PULL-TO-REFRESH & BODY SCROLL — Huawei MateTab / Android Chrome
+// Mencegah refresh halaman dan scroll body yang tidak diinginkan
 // ============================================================
 (function() {
     let lastTouchY = 0;
     let touchStartY = 0;
+    let isInScrollableArea = false;
 
     document.addEventListener('touchstart', function(e) {
         if (e.touches.length === 1) {
             touchStartY = e.touches[0].clientY;
             lastTouchY  = e.touches[0].clientY;
+            
+            // Cek apakah touch dimulai di dalam scrollable area
+            let el = e.target;
+            isInScrollableArea = false;
+            while (el && el !== document.body) {
+                const style = window.getComputedStyle(el);
+                const overflowY = style.overflowY;
+                if (overflowY === 'auto' || overflowY === 'scroll') {
+                    isInScrollableArea = true;
+                    break;
+                }
+                el = el.parentElement;
+            }
         }
     }, { passive: true });
 
@@ -6127,24 +6728,45 @@ document.addEventListener('keydown', function(e) {
         const deltaY = touch.clientY - lastTouchY;
         lastTouchY = touch.clientY;
 
-        // Cek apakah scroll container saat ini sudah di paling atas
+        // Cek apakah di dalam scroll container
         let el = e.target;
+        let scrollableContainer = null;
         let scrollableAtTop = false;
+        let scrollableAtBottom = false;
+        
         while (el && el !== document.body) {
             const style = window.getComputedStyle(el);
             const overflowY = style.overflowY;
             const isScrollable = (overflowY === 'auto' || overflowY === 'scroll');
-            if (isScrollable && el.scrollTop === 0 && deltaY > 0) {
-                scrollableAtTop = true;
+            
+            if (isScrollable) {
+                scrollableContainer = el;
+                scrollableAtTop = el.scrollTop === 0;
+                scrollableAtBottom = (el.scrollTop + el.clientHeight) >= el.scrollHeight - 1;
                 break;
             }
-            if (isScrollable) break; // ada scroll container tapi tidak di atas
             el = el.parentElement;
         }
 
-        // Jika di paling atas body dan swipe ke bawah → block
+        // Jika di dalam scrollable container
+        if (scrollableContainer) {
+            // Block pull-to-refresh saat scroll di atas
+            if (scrollableAtTop && deltaY > 0) {
+                e.preventDefault();
+                return;
+            }
+            // Block overscroll saat scroll di bawah (KUNCI FIX MATEPADE!)
+            if (scrollableAtBottom && deltaY < 0) {
+                e.preventDefault();
+                return;
+            }
+            // Biarkan scroll normal di tengah
+            return;
+        }
+
+        // Jika di luar scrollable container, block semua scroll vertikal
         const bodyAtTop = document.documentElement.scrollTop === 0 && window.scrollY === 0;
-        if ((bodyAtTop || scrollableAtTop) && deltaY > 0) {
+        if (bodyAtTop && deltaY > 0) {
             e.preventDefault();
         }
     }, { passive: false }); // passive: false wajib agar preventDefault bekerja
@@ -6153,6 +6775,7 @@ document.addEventListener('keydown', function(e) {
     document.addEventListener('touchend', function() {
         lastTouchY = 0;
         touchStartY = 0;
+        isInScrollableArea = false;
     }, { passive: true });
 })();
 </script>
